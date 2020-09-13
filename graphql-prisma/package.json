@@ -6,11 +6,13 @@
     "scripts": {
         "start": "nodemon src/index.js --ext js,graphql --exec babel-node",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "get-schema": "graphql get-schema -p prisma"
+        "get-schema": "graphql codegen"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@graphql-cli/codegen": "^1.17.8",
+        "@graphql-codegen/schema-ast": "^1.17.8",
         "babel-cli": "^6.26.0",
         "babel-preset-env": "^1.7.0",
         "graphql-cli": "^4.0.0",
