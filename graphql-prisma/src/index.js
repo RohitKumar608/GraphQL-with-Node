@@ -6,6 +6,7 @@ import User from './resolvers/User'
 import Post from './resolvers/Post'
 import Comment from './resolvers/Comment'
 import Subscription from './Subscription/subscription'
+import './prisma'
 // Scalar types - String, Boolean, Int, Float, ID
 
 const pubsub = new PubSub()
