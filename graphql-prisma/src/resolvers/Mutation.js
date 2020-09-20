@@ -54,73 +54,28 @@ const Mutation = {
 
     return post
   },
-  deletePost(parent, args, { db, pubsub }, info) {
-    const postIndex = db.posts.findIndex((post) => post.id === args.id)
+  deletePost(parent, args, { prisma }, info) {
+    const postIndex = prisma.exists.Post({id: args.id})
 
     if (postIndex === -1) {
       throw new Error("Post not found")
     }
-
-    const [post] = db.posts.splice(postIndex, 1)
-
-    db.comments = db.comments.filter((comment) => comment.post !== args.id)
-
-    if (post.published) {
-      pubsub.publish("post", {
-        post: {
-          mutation: "DELETED",
-          data: post,
-        },
-      })
-    }
-
-    return post
+    return prisma.mutation.deletePost({where: {
+      id: args.id
+    }}, info)
   },
-  updatePost(parent, args, { db, pubsub }, info) {
+  updatePost(parent, args, { prisma }, info) {
     const { id, data } = args
-    const post = db.posts.find((post) => post.id === id)
-    const originalPost = { ...post }
-
-    if (!post) {
+    const postIndex = prisma.exists.Post({id: id})
+    if (postIndex === -1) {
       throw new Error("Post not found")
     }
-
-    if (typeof data.title === "string") {
-      post.title = data.title
-    }
-
-    if (typeof data.body === "string") {
-      post.body = data.body
-    }
-
-    if (typeof data.published === "boolean") {
-      post.published = data.published
-
-      if (originalPost.published && !post.published) {
-        pubsub.publish("post", {
-          post: {
-            mutation: "DELETED",
-            data: originalPost,
-          },
-        })
-      } else if (!originalPost.published && post.published) {
-        pubsub.publish("post", {
-          post: {
-            mutation: "CREATED",
-            data: post,
-          },
-        })
-      }
-    } else if (post.published) {
-      pubsub.publish("post", {
-        post: {
-          mutation: "UPDATED",
-          data: post,
-        },
-      })
-    }
-
-    return post
+    return prisma.mutation.updatePost({
+      where: {
+        id: id
+      },
+      data: data
+    }, info)
   },
   createComment(parent, args, { db, pubsub }, info) {
     const userExists = db.users.some((user) => user.id === args.data.author)
