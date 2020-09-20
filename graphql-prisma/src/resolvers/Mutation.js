@@ -32,7 +32,6 @@ const Mutation = {
   },
   async createPost(parent, args, { prisma, pubsub }, info) {
     const isUserExist = await prisma.exists.User({ id: args.data.author })
-    console.log(args, isUserExist)
     if (!isUserExist) {
       throw new Error("User not found")
     }
@@ -55,92 +54,83 @@ const Mutation = {
     return post
   },
   deletePost(parent, args, { prisma }, info) {
-    const postIndex = prisma.exists.Post({id: args.id})
+    const postIndex = prisma.exists.Post({ id: args.id })
 
     if (postIndex === -1) {
       throw new Error("Post not found")
     }
-    return prisma.mutation.deletePost({where: {
-      id: args.id
-    }}, info)
+    return prisma.mutation.deletePost(
+      {
+        where: {
+          id: args.id,
+        },
+      },
+      info
+    )
   },
   updatePost(parent, args, { prisma }, info) {
     const { id, data } = args
-    const postIndex = prisma.exists.Post({id: id})
+    const postIndex = prisma.exists.Post({ id: id })
     if (postIndex === -1) {
       throw new Error("Post not found")
     }
-    return prisma.mutation.updatePost({
-      where: {
+    return prisma.mutation.updatePost(
+      {
+        where: {
+          id: id,
+        },
+        data: data,
+      },
+      info
+    )
+  },
+  async createComment(parent, args, { prisma }, info) {
+    const isPostExist = await prisma.exists.User({ id: args.data.author })
+    const isUserExist = await prisma.exists.Post({ id: args.data.post })
+    if (!isPostExist || !isUserExist) {
+      throw new Error("Unable to find user and post")
+    }
+    return prisma.mutation.createComment(
+      {
+        data:{text: args.data.text,
+        author: {
+          connect: {
+            id: args.data.author,
+          },
+        },
+        post: {
+          connect: {
+            id: args.data.post,
+          },
+        },
+      },
+    },
+      info
+    )
+  },
+  deleteComment(parent, args, { prisma }, info) {
+    const isCommentExist = prisma.exists.Comment({id: args.id})
+    if(!isCommentExist){
+      throw new Error("Comment not found")
+    }
+    return prisma.mutation.deleteComment({
+      where:{
+        id: args.id
+      }
+    },info)
+  },
+  updateComment(parent, args, {prisma }, info) {
+    const { id, data } = args
+    const isCommentExist = prisma.exists.Comment({id: id})
+    if(!isCommentExist){
+      throw new Error("Comment not found")
+    }
+    return prisma.mutation.updateComment({
+      where:{
         id: id
       },
       data: data
-    }, info)
-  },
-  createComment(parent, args, { db, pubsub }, info) {
-    const userExists = db.users.some((user) => user.id === args.data.author)
-    const postExists = db.posts.some(
-      (post) => post.id === args.data.post && post.published
-    )
-
-    if (!userExists || !postExists) {
-      throw new Error("Unable to find user and post")
-    }
-
-    const comment = {
-      id: uuidv4(),
-      ...args.data,
-    }
-
-    db.comments.push(comment)
-    pubsub.publish(`comment ${args.data.post}`, {
-      comment: {
-        mutation: "CREATED",
-        data: comment,
-      },
-    })
-
-    return comment
-  },
-  deleteComment(parent, args, { db, pubsub }, info) {
-    const commentIndex = db.comments.findIndex(
-      (comment) => comment.id === args.id
-    )
-
-    if (commentIndex === -1) {
-      throw new Error("Comment not found")
-    }
-
-    const [deletedComment] = db.comments.splice(commentIndex, 1)
-    pubsub.publish(`comment ${deletedComment.post}`, {
-      comment: {
-        mutation: "DELETED",
-        data: deletedComment,
-      },
-    })
-
-    return deletedComment
-  },
-  updateComment(parent, args, { db, pubsub }, info) {
-    const { id, data } = args
-    const comment = db.comments.find((comment) => comment.id === id)
-
-    if (!comment) {
-      throw new Error("Comment not found")
-    }
-
-    if (typeof data.text === "string") {
-      comment.text = data.text
-    }
-
-    pubsub.publish(`comment ${comment.post}`, {
-      comment: {
-        mutation: "UPDATED",
-        data: comment,
-      },
-    })
-
-    return comment
+    },info)
   },
 }
 
