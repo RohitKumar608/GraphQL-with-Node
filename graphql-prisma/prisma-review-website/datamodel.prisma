@@ -8,7 +8,7 @@ type Book {
 
 type User {
   id: ID! @id
-  username: String! @unique
+  name: String! @unique
   reviews: [Review!]! @relation(name: "ReviewToUser", onDelete: CASCADE)
 }
 
