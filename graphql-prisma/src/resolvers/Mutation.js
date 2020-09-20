@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid"
 
 const Mutation = {
-    async createUser(parent, args, { prisma }, info) {
+  async createUser(parent, args, { prisma }, info) {
     const emailTaken = await prisma.exists.User({ email: args.data.email })
 
     if (emailTaken) {
@@ -11,63 +11,46 @@ const Mutation = {
     return prisma.mutation.createUser({ data: args.data }, info)
   },
   deleteUser(parent, args, { prisma }, info) {
-    const userIndex = prisma.exists.User({id: args.id})
+    const userIndex = prisma.exists.User({ id: args.id })
 
     if (!userIndex) {
       throw new Error("User not found")
     }
-    return prisma.mutation.deleteUser({where:{id: args.id}}, info)
+    return prisma.mutation.deleteUser({ where: { id: args.id } }, info)
   },
-  updateUser(parent, args, { db }, info) {
-    const { id, data } = args
-    const user = db.users.find((user) => user.id === id)
-
-    if (!user) {
+  updateUser(parent, args, { prisma }, info) {
+    const isExist = prisma.exists.User({ id: args.id })
+    if (!isExist) {
       throw new Error("User not found")
     }
-
-    if (typeof data.email === "string") {
-      const emailTaken = db.users.some((user) => user.email === data.email)
-
-      if (emailTaken) {
-        throw new Error("Email taken")
-      }
-
-      user.email = data.email
-    }
-
-    if (typeof data.name === "string") {
-      user.name = data.name
-    }
-
-    if (typeof data.age !== "undefined") {
-      user.age = data.age
-    }
-
-    return user
+    return prisma.mutation.updateUser({
+      where: {
+        id: args.id,
+      },
+      data: args.data,
+    })
   },
-  createPost(parent, args, { db, pubsub }, info) {
-    const userExists = db.users.some((user) => user.id === args.data.author)
-
-    if (!userExists) {
+  async createPost(parent, args, { prisma, pubsub }, info) {
+    const isUserExist = await prisma.exists.User({ id: args.data.author })
+    console.log(args, isUserExist)
+    if (!isUserExist) {
       throw new Error("User not found")
     }
-
-    const post = {
-      id: uuidv4(),
-      ...args.data,
-    }
-
-    db.posts.push(post)
-
-    if (args.data.published) {
-      pubsub.publish("post", {
-        post: {
-          mutation: "CREATED",
-          data: post,
+    const post = prisma.mutation.createPost(
+      {
+        data: {
+          title: args.data.title,
+          body: args.data.title,
+          published: args.data.published,
+          author: {
+            connect: {
+              id: args.data.author,
+            },
+          },
         },
-      })
-    }
+      },
+      info
+    )
 
     return post
   },
