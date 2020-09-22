@@ -1,4 +1,7 @@
-schema: http://localhost:4466
+schema: 
+  http://localhost:4466:
+    headers:
+      Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNlcnZpY2UiOiJkZWZhdWx0QGRlZmF1bHQiLCJyb2xlcyI6WyJhZG1pbiJdfSwiaWF0IjoxNjAwNzQ3NTkzLCJleHAiOjE2MDEzNTIzOTN9.7Hd_oaCQ0lkSEfwpff-50UmyJsL5wgtlhEHfbVCRnpg'
 extensions:
   codegen:
     generates:
