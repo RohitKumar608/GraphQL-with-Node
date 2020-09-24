@@ -15,13 +15,15 @@
         "@graphql-codegen/schema-ast": "^1.17.8",
         "babel-cli": "^6.26.0",
         "babel-preset-env": "^1.7.0",
+        "bcryptjs": "^2.4.3",
         "graphql-cli": "^4.0.0",
         "graphql-yoga": "^1.18.3",
+        "jsonwebtoken": "^8.5.1",
         "nodemon": "^2.0.4",
-        "prisma-binding": "^2.3.16",
-        "uuid": "^8.3.0"
+        "prisma-binding": "^2.3.16"
     },
     "devDependencies": {
+        "@babel/plugin-syntax-optional-chaining": "^7.8.3",
         "babel-plugin-transform-object-rest-spread": "^6.26.0"
     }
 }

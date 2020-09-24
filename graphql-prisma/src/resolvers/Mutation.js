@@ -1,14 +1,49 @@
-import { v4 as uuidv4 } from "uuid"
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
 
 const Mutation = {
+  async login(parent, args, { prisma }, info) {
+    const user = await prisma.query.user({
+      where: {
+        email: args.data.email,
+      },
+    })
+
+    if (!user) {
+      throw new Error("Unable to login")
+    }
+
+    const isMatch = await bcrypt.compare(args.data.password, user.password)
+
+    if (!isMatch) {
+      throw new Error("Unable to login")
+    }
+
+    return {
+      user,
+      token: jwt.sign({ userId: user.id }, "thisisasecret"),
+    }
+  },
   async createUser(parent, args, { prisma }, info) {
     const emailTaken = await prisma.exists.User({ email: args.data.email })
-
+    if (args.data.password.length < 7) {
+      throw new Error("Password must be 8 character or longer")
+    }
     if (emailTaken) {
       throw new Error("Email taken")
     }
-    // info is the selection send from the query
-    return prisma.mutation.createUser({ data: args.data }, info)
+    const password = await bcrypt.hash(args.data.password, 10)
+    const user = await prisma.mutation.createUser({
+      data: {
+        ...args.data,
+        password,
+      },
+    })
+    const token = jwt.sign({ userId: user.id }, "thisisthesecret")
+    return {
+      user,
+      token,
+    }
   },
   deleteUser(parent, args, { prisma }, info) {
     const userIndex = prisma.exists.User({ id: args.id })
@@ -16,6 +51,7 @@ const Mutation = {
     if (!userIndex) {
       throw new Error("User not found")
     }
+    // info is the selection send from the query
     return prisma.mutation.deleteUser({ where: { id: args.id } }, info)
   },
   updateUser(parent, args, { prisma }, info) {
@@ -92,45 +128,52 @@ const Mutation = {
     }
     return prisma.mutation.createComment(
       {
-        data:{text: args.data.text,
-        author: {
-          connect: {
-            id: args.data.author,
+        data: {
+          text: args.data.text,
+          author: {
+            connect: {
+              id: args.data.author,
+            },
           },
-        },
-        post: {
-          connect: {
-            id: args.data.post,
+          post: {
+            connect: {
+              id: args.data.post,
+            },
           },
         },
       },
-    },
       info
     )
   },
   deleteComment(parent, args, { prisma }, info) {
-    const isCommentExist = prisma.exists.Comment({id: args.id})
-    if(!isCommentExist){
+    const isCommentExist = prisma.exists.Comment({ id: args.id })
+    if (!isCommentExist) {
       throw new Error("Comment not found")
     }
-    return prisma.mutation.deleteComment({
-      where:{
-        id: args.id
-      }
-    },info)
-  },
-  updateComment(parent, args, {prisma }, info) {
-    const { id, data } = args
-    const isCommentExist = prisma.exists.Comment({id: id})
-    if(!isCommentExist){
-      throw new Error("Comment not found")
-    }
-    return prisma.mutation.updateComment({
-      where:{
-        id: id
+    return prisma.mutation.deleteComment(
+      {
+        where: {
+          id: args.id,
+        },
       },
-      data: data
-    },info)
+      info
+    )
+  },
+  updateComment(parent, args, { prisma }, info) {
+    const { id, data } = args
+    const isCommentExist = prisma.exists.Comment({ id: id })
+    if (!isCommentExist) {
+      throw new Error("Comment not found")
+    }
+    return prisma.mutation.updateComment(
+      {
+        where: {
+          id: id,
+        },
+        data: data,
+      },
+      info
+    )
   },
 }
 
