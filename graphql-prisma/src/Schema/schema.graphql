@@ -4,6 +4,7 @@ type Query {
     comments: [Comment!]!
     me: User!
     post(id: ID!): Post!
+    myPosts: Post!
 }
 
 type Mutation {
