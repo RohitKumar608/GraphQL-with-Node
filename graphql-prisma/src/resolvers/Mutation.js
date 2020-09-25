@@ -1,6 +1,7 @@
 import getUserId from "../Utils/getUserId"
 import generateToken from '../Utils/generateToken'
 import hashPassword from '../Utils/hashPassword'
+import bcrypt from "bcryptjs"
 
 const Mutation = {
   async createUser(parent, args, { prisma }, info) {
