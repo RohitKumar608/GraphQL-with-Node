@@ -1,10 +1,10 @@
 type Query {
-    users(query: String): [User!]!
-    posts(query: String): [Post!]!
-    comments: [Comment!]!
+    users(first: Int, skip: Int, after: String, query: String): [User!]!
+    posts(first: Int, skip: Int, after: String, query: String,): [Post!]!
+    comments(first: Int, skip: Int, after: String): [Comment!]!
     me: User!
     post(id: ID!): Post!
-    myPosts: Post!
+    myPosts(first: Int, skip: Int, after: String): Post!
 }
 
 type Mutation {
