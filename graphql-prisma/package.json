@@ -4,18 +4,22 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "nodemon src/index.js --ext js,graphql --exec babel-node",
+        "start": "env-cmd -f ./config/prod.env node dist/index.js",
+        "heroku-postbuild": "babel src --out-dir dist --copy-files",
+        "dev": "env-cmd -f ./config/dev.env nodemon src/index.js --ext js,graphql --exec babel-node",
         "test": "echo \"Error: no test specified\" && exit 1",
         "get-schema": "graphql codegen"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@babel/polyfill": "^7.11.5",
         "@graphql-cli/codegen": "^1.17.8",
         "@graphql-codegen/schema-ast": "^1.17.8",
         "babel-cli": "^6.26.0",
         "babel-preset-env": "^1.7.0",
         "bcryptjs": "^2.4.3",
+        "env-cmd": "^10.1.0",
         "graphql-cli": "^4.0.0",
         "graphql-yoga": "^1.18.3",
         "jsonwebtoken": "^8.5.1",
