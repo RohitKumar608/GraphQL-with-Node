@@ -7,7 +7,7 @@
         "start": "env-cmd -f ./config/prod.env node dist/index.js",
         "heroku-postbuild": "babel src --out-dir dist --copy-files",
         "dev": "env-cmd -f ./config/dev.env nodemon src/index.js --ext js,graphql --exec babel-node",
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "jest --watch",
         "get-schema": "graphql codegen"
     },
     "author": "",
@@ -28,6 +28,7 @@
     },
     "devDependencies": {
         "@babel/plugin-syntax-optional-chaining": "^7.8.3",
-        "babel-plugin-transform-object-rest-spread": "^6.26.0"
+        "babel-plugin-transform-object-rest-spread": "^6.26.0",
+        "jest": "^26.4.2"
     }
 }
